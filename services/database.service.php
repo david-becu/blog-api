@@ -29,8 +29,7 @@ class DatabaseService
                     )
                 );
             } catch (PDOException $e) {
-                die("Erreur de connexion à la base de données :
-$e->getMessage()");
+                die("Erreur de connexion à la base de données :$e->getMessage()");
             }
             self::$connection = $db_connection;
         }

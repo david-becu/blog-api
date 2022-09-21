@@ -1,5 +1,5 @@
 <?php
-class DatabaseController
+abstract class DatabaseController
 {
     public function __construct($params)
     {
@@ -35,7 +35,18 @@ class DatabaseController
         if ($_SERVER['REQUEST_METHOD'] == "DELETE" && isset($id)) {
             $this->action = $this->hardDelete($id);
         }
+
+        // Routes avec les relations
+        if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($id)) {
+            if ($id == 0) { //POST /table/0
+                $this->action = $this->getAllWith($this->body["with"]);
+            }
+            if ($id > 0) //POST /table/:id
+                $this->action = $this->getOneWith($id, $this->body["with"]);
+        }
     }
+
+    public abstract function affectDataToRow(&$row, $sub_rows);
 
     public function getAll()
     {
@@ -43,12 +54,42 @@ class DatabaseController
         $rows = $dbs->selectAll();
         return $rows;
     }
+
+    function getAllWith($with)
+    {
+        $rows = $this->getAll();
+        $sub_rows = [];
+        foreach ($with as $table) {
+            $dbs = new DatabaseService($table);
+            $table_rows = $dbs->selectAll();
+            $sub_rows[$table] = $table_rows;
+        }
+        foreach ($rows as $row) {
+            $this->affectDataToRow($row, $sub_rows);
+        }
+        return $rows;
+    }
+
     public function getOne($id)
     {
         $dbs = new DatabaseService($this->table);
         $row = $dbs->selectOne($id);
         return $row;
     }
+
+
+    function getOneWith($id, $with)
+    {
+        $row = $this->getOne($id);
+        foreach($with as $table) {
+            $dbs = new DatabaseService($table);
+            $table_rows = $dbs->selectAll();
+            $sub_rows[$table] = $table_rows;
+        }
+        $this->affectDataToRow($row, $sub_rows);
+        return $row;
+    }
+
     public function create()
     {
         return "Insert a new row in table $this->table with values : " .

@@ -8,6 +8,7 @@ $_ENV['config'] = json_decode($config);
 require_once 'services/database.service.php';
 require_once 'controllers/database.controller.php';
 
+
 $route = trim($_SERVER["REQUEST_URI"], '/');
 $route = filter_var($route, FILTER_SANITIZE_URL);
 $route = explode('/', $route);
@@ -23,8 +24,7 @@ if ($_ENV["current"] == "dev" && $controllerName == 'init') {
        foreach ($rows as $tableName) {
               $controllerFile = "controllers/$tableName.controller.php";
               if (!file_exists($controllerFile)) {
-                     $fileContent = "<?php class " . ucfirst($tableName)
-                            . "Controller extends DatabaseController {\r\n\r\n}?>";
+                     $fileContent = "<?php class " . ucfirst($tableName) . "Controller extends DatabaseController {\r\n\r\n}?>";
                      file_put_contents($controllerFile, $fileContent);
                      echo ucfirst($tableName) . "Controller created\r\n";
               }
@@ -35,7 +35,7 @@ if ($_ENV["current"] == "dev" && $controllerName == 'init') {
 
 $controllerFilePath = "controllers/$controllerName.controller.php";
 if (!file_exists($controllerFilePath)) {
-       header('HTTP/1.0 404 Not Found');
+       // header('HTTP/1.0 404 Not Found');
        die;
 }
 
@@ -50,3 +50,4 @@ if (!isset($response)) {
 }
 
 echo json_encode($response);
+?>
